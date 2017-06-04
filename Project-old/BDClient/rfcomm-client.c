@@ -1,0 +1,41 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/hci.h>
+#include <bluetooth/hci_lib.h>
+#include <bluetooth/rfcomm.h>
+
+int main(int argc, char **argv)
+{
+    struct sockaddr_rc addr = { 0 };
+    int s, status;
+    char dest[19] = "5C:F3:70:79:98:E7";
+    char buf[1024] = {0};
+
+    // allocate a socket
+    s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+
+    // set the connection parameters (who to connect to)
+    addr.rc_family = AF_BLUETOOTH;
+    addr.rc_channel = (uint8_t) 1;
+    str2ba( dest, &addr.rc_bdaddr );
+
+    // connect to server
+    status = connect(s, (struct sockaddr *)&addr, sizeof(addr));
+
+    // send a message
+    if( status == 0 ) {
+        status = write(s, "hello!", 6);
+        if(read(s, buf, sizeof(buf)))
+        {
+        	printf("%s\n", buf);
+        }
+
+    }
+    if( status < 0 ) perror("uh oh");
+
+    close(s);
+    return 0;
+}
